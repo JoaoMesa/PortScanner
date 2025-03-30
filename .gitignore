@@ -1,0 +1,12 @@
+# Diretório de build
+target/
+
+# Diretórios de dependências (caso esteja usando Cargo workspaces)
+**/target/
+**/Cargo.lock
+
+# Arquivos gerados pelo editor/IDE
+*.rs.bk
+*.swp
+.idea/
+.vscode/
