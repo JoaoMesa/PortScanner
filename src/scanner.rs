@@ -1,50 +1,35 @@
-use std::net::TcpStream;
-use std::time:: Duration;
-use std::net::SocketAddr;
+use std::net::{ToSocketAddrs, TcpStream, SocketAddr, IpAddr};
+use std::time::Duration;
 
 pub struct PortScanner {
-    target: String,
+    target_ip: IpAddr,
+    timeout: Duration,
     ports: Vec<u16>,
-    timeout: u64,
 }
 
 impl PortScanner {
-    pub fn new(target: &str, ports: Vec<u16>, timeout: u64) -> Self {
-        Self {
-            target: target.to_string(),
+    pub fn new(target: &str, timeout_ms: u64, ports: Vec<u16>) -> Option<Self> {
+        let addrs: Vec<_> = (target, 0).to_socket_addrs().ok()?.collect();
+        let target_ip = addrs.iter()
+            .find(|addr| addr.is_ipv4())
+            .map(|addr| addr.ip())?;
+
+        Some(Self {
+            target_ip,
+            timeout: Duration::from_millis(timeout_ms),
             ports,
-            timeout,
-        }
+        })
+    }
+
+    fn scan_port(&self, port: u16) -> bool {
+        let addr = SocketAddr::new(self.target_ip, port);
+        TcpStream::connect_timeout(&addr, self.timeout).is_ok()
     }
 
     pub fn scan(&self) {
         for &port in &self.ports {
-            if self.scan_port(port){
-                println!("Port {} OPEN", port);
-            } else{
-                println!("Port {} CLOSED", port);
-            }
-            
-        }
-    }
-
-    pub fn scan_port(&self, port: u16) -> bool {
-        let addr = format!("{}:{}", self.target.trim(), port);
-        let timeout = Duration::from_millis(self.timeout);
-
-
-        /*match TcpStream::connect_timeout(&addr.parse().unwrap(), timeout){
-            Ok(_) => true,
-            Err(_) => false,
-        }*/
-        match addr.parse::<SocketAddr>() {
-            Ok(socket_addr) => {
-                TcpStream::connect_timeout(&socket_addr, timeout).is_ok()
-            },
-            Err(_) => {
-                eprintln!("Invalid address format: {}", addr);
-                false
-            }
+            let status = if self.scan_port(port) { "OPEN" } else { "CLOSED" };
+            println!("Port {}: {}", port, status);
         }
     }
 }
