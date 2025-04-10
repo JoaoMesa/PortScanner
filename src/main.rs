@@ -1,10 +1,25 @@
+use crate::scanner::PortScanner;
 mod scanner;
+mod methods;
+mod utils;
 
-use scanner::PortScanner;
+fn main() {
+    /*let udp_ports = vec![
+        53,    // DNS
+        123,   // NTP
+        161,   // SNMP
+        500,   // IPSec
+        1900,  // UPnP
+        5353   // mDNS
+    ];*/
 
-fn main(){
-
-    let scanner = PortScanner::new("scanme.nmap.org", 1000, vec![15, 16,17, 1, 22, 80, 443]).unwrap();
-
-    scanner.scan();  // Agora as portas já fazem parte do scanner
+    let scanner = PortScanner::new(
+        //"host-inexistente.abc",
+	"scanme.nmap.org",
+	1000,
+        vec![80, 443, 22, 8080],
+        "tcp-connect"
+    ).unwrap();
+    
+    scanner.scan();
 }
