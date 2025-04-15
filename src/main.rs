@@ -14,9 +14,8 @@ fn main() {
     ];*/
 
     let scanner = PortScanner::new(
-        //"host-inexistente.abc",
-	"scanme.nmap.org",
-	1000,
+	      "felix.nmap.org",
+	      1000,
         vec![80, 443, 22, 8080],
         "tcp-connect"
     ).unwrap();
